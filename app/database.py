@@ -5,6 +5,9 @@ from sqlmodel import Session, SQLModel, create_engine
 
 _engine = None
 
+# Reaches the database started by Docker when the machine has no .env file.
+DEFAULT_DATABASE_URL = "postgresql+psycopg://postgres:postgres@localhost:5433/caching"
+
 
 def load_env_file() -> None:
     env_path = Path(__file__).resolve().parents[1] / ".env"
@@ -20,16 +23,13 @@ def load_env_file() -> None:
 
 
 def get_engine():
-    # The address lives in .env so the password is not written in the code.
+    # A local .env wins. Otherwise the tests use the database published by Docker.
     global _engine
     if _engine is not None:
         return _engine
 
     load_env_file()
-    url = os.environ.get("DATABASE_URL")
-    if not url:
-        raise RuntimeError("DATABASE_URL is missing. Add it to the .env file.")
-
+    url = os.environ.get("DATABASE_URL", DEFAULT_DATABASE_URL)
     _engine = create_engine(url)
     return _engine
 
