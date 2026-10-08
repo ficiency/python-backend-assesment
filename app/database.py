@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from sqlmodel import SQLModel, create_engine
+from sqlmodel import Session, SQLModel, create_engine
 
 _engine = None
 
@@ -36,3 +36,8 @@ def get_engine():
 
 def create_tables() -> None:
     SQLModel.metadata.create_all(get_engine())
+
+
+def get_session():
+    with Session(get_engine()) as session:
+        yield session

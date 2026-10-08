@@ -28,3 +28,7 @@ def save_payload(session: Session, label: str, output: str) -> StoredPayload:
 def find_payload(session: Session, label: str) -> StoredPayload | None:
     statement = select(StoredPayload).where(StoredPayload.label == label)
     return session.exec(statement).first()
+
+
+def find_payload_by_id(session: Session, payload_id: str) -> StoredPayload | None:
+    return session.get(StoredPayload, payload_id)
