@@ -72,7 +72,7 @@ The service separates payload generation from caching and persistence.
 2. Generate a deterministic SHA-256 label from the original input.
 3. Check whether a payload with that label already exists.
 4. For new payloads, retrieve cached string transformations or compute and persist missing ones.
-5. Interleave the transformed strings and store the resulting payload with a unique identifier.
+5. Interleave the transformed strings, one from each list in turn, because that is how the sample output is built. Store the result with a unique identifier.
 
 Retrieving an existing payload requires only a database lookup.
 
@@ -117,6 +117,8 @@ Interleaving walks both lists once and takes one element from each. Time and spa
 
 A repeated request is one indexed lookup on `label`, and then it stops. A new request currently does one indexed lookup and one insert per word. Each operation stays cheap because of the index. What grows is the number of round trips.
 
+That is enough for the short inputs in the task. With thousands of new words, the same rule should run as one `WHERE word IN (...)` lookup and one batch insert for the missing rows. The tables, the label, and the interleave step stay as they are.
+
 ## Testing
 
 With the Docker containers running, execute:
@@ -135,9 +137,3 @@ The test suite covers:
 - Reuse of existing payload identifiers
 - Reuse of cached string transformations
 - Input validation and missing payloads
-
-## Limitations and future improvements
-
-For a new payload, each string is read from `transforms` on its own, and each missing string is inserted on its own.
-
-That is enough for the short inputs in the task. With thousands of new words, the same rule should run as one `WHERE word IN (...)` lookup and one batch insert for the missing rows. The tables, the label, and the interleave step stay as they are.
