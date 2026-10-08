@@ -115,15 +115,19 @@ Interleaving walks both lists once and takes one element from each. Time and spa
 
 `payloads.label` and `transforms.word` are unique indexes. Each lookup is a B-tree search, O(log n) in the number of stored rows, not a table scan.
 
-A repeated request is one indexed lookup on `label`, and then it stops. A new request currently does one indexed lookup and one insert per word. Each operation stays cheap because of the index. What grows is the number of round trips.
+A repeated request is one indexed lookup on `label`, and then it stops. A new request does one indexed lookup per word and inserts only the words that are not already stored. Each operation stays cheap because of the index. What grows is the number of round trips.
 
 That is enough for the short inputs in the task. With thousands of new words, the same rule should run as one `WHERE word IN (...)` lookup and one batch insert for the missing rows. The tables, the label, and the interleave step stay as they are.
 
 ## Testing
 
-With the Docker containers running, execute:
+Running the service only needs Docker. Running the tests also needs Python.
+
+Start the containers, install the dependencies, and then run the suite:
 
 ```bash
+docker compose up -d --build
+pip install -r requirements.txt
 pytest
 ```
 
